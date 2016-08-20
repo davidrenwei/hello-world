@@ -1,2 +1,2 @@
 # hello-world
-this is a hello-world program from david 
+This is a hello-world program from david. My name is david.
