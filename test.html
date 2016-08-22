@@ -24,7 +24,7 @@
 			var cube = new THREE.Mesh( geometry, material );
 			scene.add( cube );
  
-			camera.position.z = 5;
+			camera.position.z = 500;
 
 // instantiate a loader
 var loader = new THREE.OBJLoader();
@@ -35,7 +35,7 @@ loader.load(
 	'obj/ship.obj',
 	// Function when resource is loaded
 	function ( object ) {
-//		scene.add( object );
+		scene.add( object );
 	}
 );
 
