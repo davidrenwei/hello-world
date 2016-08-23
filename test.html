@@ -6,51 +6,180 @@
 			canvas { width: 100%; height: 100% }
 		</style>
 	</head>
+
 	<body>
 		<script src="js/three.js"></script>
-		<script src="js/loaders/DDSLoader.js"></script>
-		<script src="js/loaders/MTLLoader.js"></script>
 		<script src="js/loaders/OBJLoader.js"></script>
+		<script src="js/loaders/MTLLoader.js"></script>
+		<script src="js/controls/TrackballControls.js"></script>
+
 		<script>
-			var scene = new THREE.Scene();
-			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
-			var renderer = new THREE.WebGLRenderer();
-			renderer.setSize( window.innerWidth, window.innerHeight );
-			document.body.appendChild( renderer.domElement );
+			var container;
 
-			var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-			var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-			var cube = new THREE.Mesh( geometry, material );
-			scene.add( cube );
- 
-			camera.position.z = 15;
+			var camera, scene, renderer;
 
-// instantiate a loader
-var loader = new THREE.OBJLoader();
+			var mouseX = 0, mouseY = 0;
 
-// load a resource
-loader.load(
-	// resource URL
-	'obj/ship.obj',
-	// Function when resource is loaded
-	function ( object ) {
-		scene.add( object );
-	}
-);
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
 
 
+			init();
+			animate();
 
-			var render = function () {
-				requestAnimationFrame( render );
 
-				cube.rotation.x += 0.01;
-				cube.rotation.y += 0.01;
+			function init() {
 
-				renderer.render(scene, camera);
-			};
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
 
-			render();
+				//camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 2, 20000 );
+				camera.position.z = 10;
+				camera.position.y = -10;
+				camera.position.x = 10;
+
+				// scene
+
+				scene = new THREE.Scene();	
+
+				var ambient = new THREE.AmbientLight( 0x101030 );
+				scene.add( ambient );
+
+				var directionalLight = new THREE.DirectionalLight( 0xffeedd );
+				directionalLight.position.set( 1, 1, 1 );
+				scene.add( directionalLight );
+
+				
+				//controls
+				
+				controls = new THREE.TrackballControls( camera );
+
+				controls.rotateSpeed = 3.0;
+				controls.zoomSpeed = 5;
+				controls.panSpeed = 5;
+
+				controls.noZoom = false;
+				controls.noPan = true;
+
+				controls.staticMoving = true;
+				controls.dynamicDampingFactor = 3;
+
+				//controls.minDistance = 1;
+				//controls.maxDistance = 100;
+				
+				// texture
+				
+				
+
+				var manager = new THREE.LoadingManager();
+				manager.onProgress = function ( item, loaded, total ) {
+
+					console.log( item, loaded, total );
+
+				};
+
+				var texture = new THREE.Texture();
+
+				var onProgress = function ( xhr ) {
+					if ( xhr.lengthComputable ) {
+						var percentComplete = xhr.loaded / xhr.total * 100;
+						console.log( Math.round(percentComplete, 2) + '% downloaded' );
+					}
+				};
+
+				var onError = function ( xhr ) {
+				};
+
+
+				/*
+				var loader = new THREE.ImageLoader( manager );
+				loader.load( 'textures/UV_Grid_Sm.jpg', function ( image ) {
+
+					texture.image = image;
+					texture.needsUpdate = true;
+
+				} );
+				*/
+				// model
+
+				var loader = new THREE.OBJLoader( manager );
+				var mtlloader = new THREE.MTLLoader ( manager );
+				loader.load( 'obj/ship.obj', function ( object ) {
+
+					//object.traverse( function ( child ) {
+
+					//	if ( child instanceof THREE.Mesh ) {
+
+					//		child.material.map = texture;
+
+					//	}
+
+					//} );
+
+				//	object.position.y = 5;
+				    mtlloader.load ('obj/ship.mtl')
+					scene.add( object );
+
+				}, onProgress, onError );
+
+				//
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+
+//				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+
+			//	camera.aspect = window.innerWidth / window.innerHeight;
+			//	camera.updateProjectionMatrix();
+
+			//	renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+//			function onDocumentMouseMove( event ) {
+
+//				mouseX = ( event.clientX - windowHalfX ) / 2;
+//				mouseY = ( event.clientY - windowHalfY ) / 2;
+
+//			}
+
+			//
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+				controls.update();
+				render();
+
+			}
+
+			function render() {
+
+//				camera.position.x += ( mouseX - camera.position.x ) * .05;
+//				camera.position.y += ( - mouseY - camera.position.y ) * .05;
+
+				//camera.lookAt( scene.position );
+
+				renderer.render( scene, camera );
+
+			}
+
 		</script>
+
 	</body>
 </html>
